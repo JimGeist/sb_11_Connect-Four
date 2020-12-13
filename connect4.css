@@ -1,0 +1,90 @@
+/* game board table */
+.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+h2 {
+  text-align: center;
+  color: #B0B0B0;
+}
+
+body {
+  background-color: #202020;
+}
+
+#board td {
+  width: 75px;
+  height: 75px;
+  border: solid 1px #666;
+}
+
+/* pieces are div within game table cells: draw as colored circles */
+
+div.options {
+  font-size: 20px;
+  margin-top: 10px;
+}
+
+.container {
+  height: 100px;
+  position: relative;
+}
+
+button {
+  font-size: 20px;
+  margin-right: 20px;
+}
+
+button.center {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.piece {
+  /* TODO: make into circles */
+  margin: 5px;
+  width: 80%;
+  height: 80%;
+}
+
+/* TODO: make pieces red/blue,  depending on player 1/2 piece */
+
+/* column-top is table row of clickable areas for each column */
+
+#column-top td {
+  border: dashed 1px lightgray;
+}
+/*
+#column-top td:hover {
+  background-color: gold;
+}
+*/
+.player1 td:hover {
+  background-color: greenyellow;
+}
+
+.player2 td:hover {
+  background-color: hotpink;
+}
+
+.ball {
+  position: relative;
+  display: block;
+	width: 65px;
+  height: 65px;
+  margin: 5px auto 0;
+  border-radius: 50%;
+}
+
+.b1 {
+  background: radial-gradient(circle at 65% 15%, white 1px, greenyellow 3%, darkgreen 70%, green 100%);    
+}
+
+.b2 {
+  background: radial-gradient(circle at 65% 15%, white 1px, hotpink 3%, firebrick 70%, hotpink 100%);  
+}
