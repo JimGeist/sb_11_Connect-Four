@@ -45,31 +45,18 @@ button.center {
   transform: translate(-50%, -50%);
 }
 
-.piece {
-  /* TODO: make into circles */
-  margin: 5px;
-  width: 80%;
-  height: 80%;
-}
-
-/* TODO: make pieces red/blue,  depending on player 1/2 piece */
-
 /* column-top is table row of clickable areas for each column */
 
 #column-top td {
   border: dashed 1px lightgray;
 }
-/*
-#column-top td:hover {
-  background-color: gold;
-}
-*/
+
 .player1 td:hover {
-  background-color: greenyellow;
+  background-color: green;
 }
 
 .player2 td:hover {
-  background-color: hotpink;
+  background-color: firebrick;
 }
 
 .ball {
