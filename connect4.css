@@ -4,9 +4,11 @@
   margin-right: auto;
 }
 
-h2 {
+h1 {
   text-align: center;
-  color: #B0B0B0;
+  color: #202020;
+  width: 570px;
+  height: 43px;
 }
 
 body {
@@ -19,21 +21,26 @@ body {
   border: solid 1px #666;
 }
 
-/* pieces are div within game table cells: draw as colored circles */
-
 div.options {
   font-size: 20px;
   margin-top: 10px;
 }
 
 .container {
-  height: 100px;
+  height: 5em;
   position: relative;
 }
 
 button {
+  height: 2em;
+  width: 11em;
   font-size: 20px;
+  font-weight: bold;
   margin-right: 20px;
+}
+
+button:hover {
+  box-shadow: 0 4px 6px 0 rgba(243,239,65, 0.35), 0 8px 30px 0 rgba(243, 239, 65, 0.25);
 }
 
 button.center {
@@ -59,6 +66,10 @@ button.center {
   background-color: firebrick;
 }
 
+.playerX td:hover {
+  background-color: #202020;
+}
+
 .ball {
   position: relative;
   display: block;
@@ -75,3 +86,84 @@ button.center {
 .b2 {
   background: radial-gradient(circle at 65% 15%, white 1px, hotpink 3%, firebrick 70%, hotpink 100%);  
 }
+
+.bX {
+  color: #B0B0B0;
+  background: none;
+} 
+
+
+.r0 {
+  position: relative;
+  animation-name: drop0;
+  animation-duration: .13s;
+}
+
+/* a 75px table element has 6 pixels worth of spacing and border 
+    drop0 begins from -45px, this places the ball halfway through 
+    the bottom border on the header row. 
+   drop0to1 is the drop from the header row to row1. A row is 
+    81px and the drop needs to start from -126px
+   and so on.
+   Drop to row5 is set to .78s (it evenly divides by 6). The 
+    animation-duration decreases by .13s for each row change.
+*/
+@keyframes drop0 {
+  from {top: -45px; }
+  to {top: 0px;}
+} 
+
+.r1 {
+  position: relative;
+  animation-name: drop0to1;
+  animation-duration: .26s;
+}
+
+@keyframes drop0to1 {
+  from {top: -126px; }
+  to {top: 0px;}
+} 
+
+.r2 {
+  position: relative;
+  animation-name: drop0to2;
+  animation-duration: .39s;
+}
+
+@keyframes drop0to2 {
+  from {top: -207px; }
+  to {top: 0px;}
+} 
+
+.r3 {
+  position: relative;
+  animation-name: drop0to3;
+  animation-duration: .52s;
+}
+
+@keyframes drop0to3 {
+  from {top: -288px; }
+  to {top: 0px;}
+} 
+
+.r4 {
+  position: relative;
+  animation-name: drop0to4;
+  animation-duration: .65s;
+}
+
+@keyframes drop0to4 {
+  from {top: -369px; }
+  to {top: 0px;}
+} 
+
+.r5 {
+  position: relative;
+  animation-name: drop0to5;
+  animation-duration: .78s;
+}
+
+@keyframes drop0to5 {
+  from {top: -450px; }
+  to {top: 0px;}
+} 

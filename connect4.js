@@ -14,6 +14,9 @@ let continueGame = true;
 
 const board = []; // array of rows, each row is array of cells  (board[y][x])
 
+// the h1 on the board will get updated each turn. Declare it globally.
+const boardMsg = document.getElementById("msg");
+
 
 /** makeBoard: create in-JS board structure:
  *    board = array of rows, each row is array of cells  (board[y][x])
@@ -39,6 +42,17 @@ function makeBoard() {
 }
 
 
+/** setBoardMsg: sets the board message (H!) to the current player */
+
+function setBoardMsg() {
+
+  boardMsg.innerText = `Player ${currPlayer[0]}'s turn`;
+  boardMsg.classList.toggle(`b${currPlayer[1]}`);
+  boardMsg.classList.toggle(`b${currPlayer[0]}`);
+
+}
+
+
 /** makeHtmlBoard: make HTML table and row of column tops. */
 
 function makeHtmlBoard() {
@@ -56,6 +70,11 @@ function makeHtmlBoard() {
   top.setAttribute("id", "column-top");
   top.setAttribute("class", "player1");
   top.addEventListener("click", handleClick);
+
+  boardMsg.innerText = `Player ${currPlayer[0]}'s turn`;
+  boardMsg.classList.toggle(`b${currPlayer[0]}`)
+
+  htmlBoard.addEventListener("click", handleBoardClick);
 
   const btn = document.getElementById("startNew")
   btn.addEventListener("click", startNewGame);
@@ -113,7 +132,12 @@ function placeInTable(y, x) {
   const cell = document.getElementById(`${y}-${x}`);
 
   const divGamePiece = document.createElement("div");
-  divGamePiece.setAttribute("class", `ball b${currPlayer[0]}`);
+  // class "r{0-(HEIGHT-1)} ball b{1 | 2}"
+  //  rx - controls the animation for the div, 
+  //  ball - the size (px), margin, and other styles for the ball
+  //  b1 or b2 - control the color gradient on the ball. One is 
+  //   green with gradients and the second is red with gradients.
+  divGamePiece.setAttribute("class", `r${y} ball b${currPlayer[0]}`);
   cell.append(divGamePiece);
 
 }
@@ -136,16 +160,28 @@ function removeFromTable(y, x) {
 
 /** endGame: announce game end */
 
-function endGame(msg) {
+function endGame(msg, gameWon) {
 
   //alert("Game Over")
   // alert was not used because of the way it popped up BEFORE the winning play was
   //  posted to the board. Instead, a message block was added above the game board
   //  to hold game completion messages.
-  document.getElementById("msg").innerText = msg;
+  boardMsg.innerText = msg;
+
+  // set coloring and text on the message if nobody won
+  if (gameWon === false) {
+    boardMsg.classList.toggle(`b${currPlayer[0]}`);
+    boardMsg.classList.add(`bX`);
+  }
 
   // block further moves
   continueGame = false;
+
+  // turn off top row hovering . . well, really keep it, but set it
+  //  playerX.  
+  const top = document.getElementById("column-top")
+  top.classList.remove(`player${currPlayer[0]}`);
+  top.classList.toggle("playerX");
 
 }
 
@@ -179,13 +215,107 @@ function startNewGame() {
   continueGame = true;
   // The &nbsp; in the h2 message will keep the space between the top of page and the 
   //  game board free for messages without shifting when a message is added.
-  document.getElementById("msg").innerHTML = "&nbsp;"
+
 
   currPlayer[0] = 1;
   currPlayer[1] = 2;
 
   clearBoards();
 
+  // set the hover color to player 1
+  const top = document.getElementById("column-top");
+  top.classList.remove("playerX");
+  top.classList.toggle(`player${currPlayer[0]}`);
+
+  // set the message to player 1
+  boardMsg.innerText = `Player ${currPlayer[0]}'s turn`;
+
+  // remove bX, b2 class
+  boardMsg.classList.remove("bX");
+  boardMsg.classList.remove(`b${currPlayer[1]}`);
+  if (boardMsg.classList.contains(`b${currPlayer[0]}`) === false) {
+    boardMsg.classList.toggle(`b${currPlayer[0]}`);
+  }
+
+
+}
+
+
+/** playColumn: we have a column from either a top row click or from
+     a click on the board. Continue the play using column x */
+
+function playColumn(x) {
+
+  // get next spot in column (if none, ignore click)
+  let y = findSpotForCol(x);
+  if (y === null) {
+    return;
+  }
+
+  // place piece in board and add to HTML table
+  nbrOfPlays += 1;
+  placeInTable(y, x);
+  board[y][x] = currPlayer[0];
+
+  // check for win
+  if (checkForWin(y, x)) {
+    return endGame(`Congratulations Player ${currPlayer[0]} - You Won!`, true);
+  }
+
+  // check for tie by checking nbrOfPlays counter against the board size.
+  //  (yeah, you probably wanted to see a .every() array method call but a counter
+  //  check requires less resources).
+  if (nbrOfPlays === (WIDTH * HEIGHT)) {
+    // tie game
+    return endGame("Tied Game. Please Play Again.", false);
+  }
+
+  // switch players
+  [currPlayer[0], currPlayer[1]] = [currPlayer[1], currPlayer[0]]
+
+  // switch the hover color
+  const top = document.getElementById("column-top");
+  top.classList.toggle(`player${currPlayer[1]}`);
+  top.classList.toggle(`player${currPlayer[0]}`);
+
+  // set the board message that announces next player
+  setBoardMsg();
+
+}
+
+
+/** handleBoardClick: handle click somewhere in the board */
+
+function handleBoardClick(evt) {
+
+  if (continueGame) {
+
+    if ((evt.target.id.indexOf("-") > -1) || (evt.target.nodeName === "DIV")) {
+
+      let elementId;
+
+      if (evt.target.nodeName === "DIV") {
+        // a div was clicked. get the id from the parent.
+        elementId = evt.target.parentNode.id;
+
+      } else {
+        elementId = evt.target.id;
+      }
+
+      console.log("inner table selected", elementId)
+
+      console.dir(evt);
+
+      let posn = elementId.indexOf("-");
+      if (posn > -1) {
+        // elementId contains a -. it should be y-x. We need the 'x'
+        let column = elementId.slice((posn + 1));
+
+        playColumn(column);
+
+      }
+    }
+  }
 }
 
 
@@ -198,37 +328,41 @@ function handleClick(evt) {
     // get x from ID of clicked cell
     let x = +evt.target.id;
 
-    // get next spot in column (if none, ignore click)
-    let y = findSpotForCol(x);
-    if (y === null) {
-      return;
-    }
+    playColumn(x);
+    // // get next spot in column (if none, ignore click)
+    // let y = findSpotForCol(x);
+    // if (y === null) {
+    //   return;
+    // }
 
-    // place piece in board and add to HTML table
-    nbrOfPlays += 1;
-    placeInTable(y, x);
-    board[y][x] = currPlayer[0];
+    // // place piece in board and add to HTML table
+    // nbrOfPlays += 1;
+    // placeInTable(y, x);
+    // board[y][x] = currPlayer[0];
 
-    // check for win
-    if (checkForWin(y, x)) {
-      return endGame(`Congratulations Player ${currPlayer[0]} - You Won!`);
-    }
+    // // check for win
+    // if (checkForWin(y, x)) {
+    //   return endGame(`Congratulations Player ${currPlayer[0]} - You Won!`, true);
+    // }
 
-    // check for tie by checking nbrOfPlays counter against the board size.
-    //  (yeah, you probably wanted to see a .every() array method call but a counter
-    //  check requires less resources).
-    if (nbrOfPlays === (WIDTH * HEIGHT)) {
-      // tie game
-      return endGame("Tied Game. Please Play Again.");
-    }
+    // // check for tie by checking nbrOfPlays counter against the board size.
+    // //  (yeah, you probably wanted to see a .every() array method call but a counter
+    // //  check requires less resources).
+    // if (nbrOfPlays === (WIDTH * HEIGHT)) {
+    //   // tie game
+    //   return endGame("Tied Game. Please Play Again.", false);
+    // }
 
-    // switch players
-    [currPlayer[0], currPlayer[1]] = [currPlayer[1], currPlayer[0]]
+    // // switch players
+    // [currPlayer[0], currPlayer[1]] = [currPlayer[1], currPlayer[0]]
 
-    // switch the hover color
-    const top = document.getElementById("column-top");
-    top.classList.toggle(`player${currPlayer[1]}`);
-    top.classList.toggle(`player${currPlayer[0]}`);
+    // // switch the hover color
+    // const top = document.getElementById("column-top");
+    // top.classList.toggle(`player${currPlayer[1]}`);
+    // top.classList.toggle(`player${currPlayer[0]}`);
+
+    // // set the board message that announces next player
+    // setBoardMsg();
 
   }
 }
