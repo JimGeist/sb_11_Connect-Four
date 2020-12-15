@@ -58,15 +58,15 @@ button.center {
   border: dashed 1px lightgray;
 }
 
-.player1 td:hover {
+.clrHoverP1 td:hover {
   background-color: green;
 }
 
-.player2 td:hover {
+.clrHoverP2 td:hover {
   background-color: firebrick;
 }
 
-.playerX td:hover {
+.clrHoverPX td:hover {
   background-color: #202020;
 }
 
@@ -79,15 +79,15 @@ button.center {
   border-radius: 50%;
 }
 
-.b1 {
+.clrP1 {
   background: radial-gradient(circle at 65% 15%, white 1px, greenyellow 3%, darkgreen 70%, green 100%);    
 }
 
-.b2 {
+.clrP2 {
   background: radial-gradient(circle at 65% 15%, white 1px, hotpink 3%, firebrick 70%, hotpink 100%);  
 }
 
-.bX {
+.clrPX {
   color: #B0B0B0;
   background: none;
 } 

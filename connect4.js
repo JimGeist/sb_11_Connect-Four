@@ -46,9 +46,11 @@ function makeBoard() {
 
 function setBoardMsg() {
 
+  // currPlayer[0] was set to the new current player before 
+  //  calling. currPlayer[1] is removed, always.
   boardMsg.innerText = `Player ${currPlayer[0]}'s turn`;
-  boardMsg.classList.toggle(`b${currPlayer[1]}`);
-  boardMsg.classList.toggle(`b${currPlayer[0]}`);
+  boardMsg.classList.remove(`clrP${currPlayer[1]}`);
+  boardMsg.classList.toggle(`clrP${currPlayer[0]}`);
 
 }
 
@@ -68,11 +70,10 @@ function makeHtmlBoard() {
   // build the row element. The row contains the data elements (cells)
   const top = document.createElement("tr");
   top.setAttribute("id", "column-top");
-  top.setAttribute("class", "player1");
+  top.setAttribute("class", "clrHoverP1");
   top.addEventListener("click", handleClick);
 
-  boardMsg.innerText = `Player ${currPlayer[0]}'s turn`;
-  boardMsg.classList.toggle(`b${currPlayer[0]}`)
+  setBoardMsg();
 
   htmlBoard.addEventListener("click", handleBoardClick);
 
@@ -127,17 +128,17 @@ function findSpotForCol(x) {
 
 function placeInTable(y, x) {
 
-  // css for ball courtesy of https://codepen.io/vikas78/pen/vYEymWd
+  // css for ball gradient courtesy of https://codepen.io/vikas78/pen/vYEymWd
 
   const cell = document.getElementById(`${y}-${x}`);
 
   const divGamePiece = document.createElement("div");
-  // class "r{0-(HEIGHT-1)} ball b{1 | 2}"
-  //  rx - controls the animation for the div, 
+  // class="r{0 | 1 | 2 | 3 | 4 | 5} ball clrP{1 | 2}"
+  //  r{0-5} - controls the animation for the div, 
   //  ball - the size (px), margin, and other styles for the ball
-  //  b1 or b2 - control the color gradient on the ball. One is 
+  //  clrP1 or clrP2 - control the color gradient on the ball. One is 
   //   green with gradients and the second is red with gradients.
-  divGamePiece.setAttribute("class", `r${y} ball b${currPlayer[0]}`);
+  divGamePiece.setAttribute("class", `r${y} ball clrP${currPlayer[0]}`);
   cell.append(divGamePiece);
 
 }
@@ -165,23 +166,22 @@ function endGame(msg, gameWon) {
   //alert("Game Over")
   // alert was not used because of the way it popped up BEFORE the winning play was
   //  posted to the board. Instead, a message block was added above the game board
-  //  to hold game completion messages.
+  //  to hold game messaging.
   boardMsg.innerText = msg;
 
   // set coloring and text on the message if nobody won
   if (gameWon === false) {
-    boardMsg.classList.toggle(`b${currPlayer[0]}`);
-    boardMsg.classList.add(`bX`);
+    boardMsg.classList.toggle(`clrP${currPlayer[0]}`);
+    boardMsg.classList.add("clrPX");
   }
 
   // block further moves
   continueGame = false;
 
-  // turn off top row hovering . . well, really keep it, but set it
-  //  playerX.  
-  const top = document.getElementById("column-top")
-  top.classList.remove(`player${currPlayer[0]}`);
-  top.classList.toggle("playerX");
+  // turn off top row hovering . . well, really keep it, but set it clrHoverPX.  
+  const topRow = document.getElementById("column-top")
+  topRow.classList.remove(`clrHoverP${currPlayer[0]}`);
+  topRow.classList.toggle("clrHoverPX");
 
 }
 
@@ -206,37 +206,38 @@ function clearBoards() {
 }
 
 
-/** starNewGame: logic to control the reset of counters, flags, and boards for the start of a 
-     new game. */
+/** starNewGame: logic to control the reset of counters, flags, and boards for 
+  the start of a new game. */
 
 function startNewGame() {
 
+  // Clear stuff
   nbrOfPlays = 0
   continueGame = true;
-  // The &nbsp; in the h2 message will keep the space between the top of page and the 
-  //  game board free for messages without shifting when a message is added.
 
+  // Before resetting current player, make sure we use the value to remove
+  //  turn-related class styles from top column (the hover) and the message
+  //  background color.
+  const topRow = document.getElementById("column-top");
+  topRow.classList.remove("clrHoverPX");
+  topRow.classList.remove(`clrHoverP${currPlayer[0]}`);
 
+  // "bX" exists when the previous game ended in a tie.
+  boardMsg.classList.remove("clrPX");
+  boardMsg.classList.remove(`clrP${currPlayer[0]}`);
+
+  // clear the JavaScript board array and HTML table
+  clearBoards();
+
+  // Set up for colors and player for new game
   currPlayer[0] = 1;
   currPlayer[1] = 2;
 
-  clearBoards();
-
   // set the hover color to player 1
-  const top = document.getElementById("column-top");
-  top.classList.remove("playerX");
-  top.classList.toggle(`player${currPlayer[0]}`);
+  topRow.classList.toggle(`clrHoverP${currPlayer[0]}`);
 
   // set the message to player 1
-  boardMsg.innerText = `Player ${currPlayer[0]}'s turn`;
-
-  // remove bX, b2 class
-  boardMsg.classList.remove("bX");
-  boardMsg.classList.remove(`b${currPlayer[1]}`);
-  if (boardMsg.classList.contains(`b${currPlayer[0]}`) === false) {
-    boardMsg.classList.toggle(`b${currPlayer[0]}`);
-  }
-
+  setBoardMsg();
 
 }
 
@@ -267,16 +268,16 @@ function playColumn(x) {
   //  check requires less resources).
   if (nbrOfPlays === (WIDTH * HEIGHT)) {
     // tie game
-    return endGame("Tied Game. Please Play Again.", false);
+    return endGame("Tied Game. Please try again.", false);
   }
 
   // switch players
   [currPlayer[0], currPlayer[1]] = [currPlayer[1], currPlayer[0]]
 
   // switch the hover color
-  const top = document.getElementById("column-top");
-  top.classList.toggle(`player${currPlayer[1]}`);
-  top.classList.toggle(`player${currPlayer[0]}`);
+  const topRow = document.getElementById("column-top");
+  topRow.classList.toggle(`clrHoverP${currPlayer[1]}`);
+  topRow.classList.toggle(`clrHoverP${currPlayer[0]}`);
 
   // set the board message that announces next player
   setBoardMsg();
@@ -295,16 +296,11 @@ function handleBoardClick(evt) {
       let elementId;
 
       if (evt.target.nodeName === "DIV") {
-        // a div was clicked. get the id from the parent.
+        // a div was clicked. get the id from the parent. It should be "y-x"
         elementId = evt.target.parentNode.id;
-
       } else {
         elementId = evt.target.id;
       }
-
-      console.log("inner table selected", elementId)
-
-      console.dir(evt);
 
       let posn = elementId.indexOf("-");
       if (posn > -1) {
@@ -328,41 +324,11 @@ function handleClick(evt) {
     // get x from ID of clicked cell
     let x = +evt.target.id;
 
+    // code that existed in original handleClick was moved to playColumn 
+    //  because the board is also a clickable element. The same logic
+    //  is needed to play the column once the column of the clicked cell 
+    //  is determined when the board is clicked.
     playColumn(x);
-    // // get next spot in column (if none, ignore click)
-    // let y = findSpotForCol(x);
-    // if (y === null) {
-    //   return;
-    // }
-
-    // // place piece in board and add to HTML table
-    // nbrOfPlays += 1;
-    // placeInTable(y, x);
-    // board[y][x] = currPlayer[0];
-
-    // // check for win
-    // if (checkForWin(y, x)) {
-    //   return endGame(`Congratulations Player ${currPlayer[0]} - You Won!`, true);
-    // }
-
-    // // check for tie by checking nbrOfPlays counter against the board size.
-    // //  (yeah, you probably wanted to see a .every() array method call but a counter
-    // //  check requires less resources).
-    // if (nbrOfPlays === (WIDTH * HEIGHT)) {
-    //   // tie game
-    //   return endGame("Tied Game. Please Play Again.", false);
-    // }
-
-    // // switch players
-    // [currPlayer[0], currPlayer[1]] = [currPlayer[1], currPlayer[0]]
-
-    // // switch the hover color
-    // const top = document.getElementById("column-top");
-    // top.classList.toggle(`player${currPlayer[1]}`);
-    // top.classList.toggle(`player${currPlayer[0]}`);
-
-    // // set the board message that announces next player
-    // setBoardMsg();
 
   }
 }
