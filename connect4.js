@@ -398,18 +398,25 @@ function checkForWinNew(y, x) {
 
     if (cells.length > 3) {
 
-      // Need 4 consecutive matches for a win.
-
-      let total = cells.reduce(function (ctrConsec, [y, x]) {
+      // 4 consecutive matches are needed for a win.
+      // 0 is passed into the reduce method as a second parameter because without 
+      //  passing in a primitive, reduce was trying to treat ctrConsec as an array.
+      // .reduce(() { ... }, 0); seemed to fix the problem.
+      let total = cells.reduce((ctrConsec, [y, x]) => {
 
         if (board[y][x] === currPlayer[0]) {
           ctrConsec++;
-          console.log("ctrConsec:", ctrConsec);
         } else {
+          // we cannot immediately clear ctrConsec when a match did NOT occur.
+          // What if 4 consecutive were already found? Remember, we are checking
+          //  around the piece just played.
           if (ctrConsec < 4) {
+            // ctrConsec is less than 4 consecutive matches and a match did NOT
+            //  occur with the coordinate just processed.
             ctrConsec = 0;
           }
         }
+        // RETURN SOMETHING FROM THE FUNCTION!!!!
         return ctrConsec;
 
       }, 0);
@@ -427,14 +434,13 @@ function checkForWinNew(y, x) {
   }
 
 
-  // Don't bother checking until there are more than 6 pieces on the board.
+  // Start checking for a win when there are more than 6 pieces on the board.
   if (nbrOfPlays > 6) {
 
     // instead of checking the entire board from 0,0 to (HEIGHT - 1), (WIDTH - 1)
-    //  just look around the piece that was just played. 
-
-    console.log("");
-    console.log(`(y,x) = (${y},${x})`);
+    //  just look AROUND the piece that was just played -- up to 3 cells to the left, 
+    //  right, down, and diagonally. No top because a piece cannot be above the one
+    //  we are currently checking!
 
     // Build the horizontal, vertical, diagBack, and diagForward coordinates of the cells we 
     //  we need to check for a win. 
@@ -446,11 +452,10 @@ function checkForWinNew(y, x) {
         horiz.push([y, xCtr]);
       }
     }
-    console.log(`(y,x) = (${y},${x}): horiz: ${JSON.stringify(horiz)}`);
 
     const vert = [];
-    // y works from max to min because we start from the bottom
-    //  of the board (HEIGHT - 1)
+    // y moves from max to min because we start from the bottom of the 
+    //  board (HEIGHT - 1).
     // (y - 1) instead of (y - 4) for the for loop end because y,x was JUST 
     //  played and there cannot be a piece above it.
     for (let yCtr = y + 3; yCtr > y - 1; yCtr--) {
@@ -459,7 +464,6 @@ function checkForWinNew(y, x) {
         vert.push([yCtr, x]);
       }
     }
-    console.log(`(y,x) = (${y},${x}): vert: ${JSON.stringify(vert)}`);
 
     // diagBack, \, x needs to decease, y needs to decrease
     const diagBack = []
@@ -471,31 +475,25 @@ function checkForWinNew(y, x) {
       }
       yCalc--;
     }
-    console.log(`(y,x) = (${y},${x}): diagBack: ${JSON.stringify(diagBack)}`);
-
 
     // diagForward, /, x needs to incease, y needs to decrease
     const diagForward = []
 
     yCalc = y + 3;
-    // for (let xCtr = x + 3; xCtr > x - 4; xCtr++) {
     for (let xCtr = x - 3; xCtr < xMax; xCtr++) {
       if ((xCtr > -1) && (xCtr < WIDTH) && (yCalc > -1) && (yCalc < HEIGHT)) {
         diagForward.push([yCalc, xCtr]);
       }
       yCalc--;
     }
-    console.log(`(y,x) = (${y},${x}): diagForward: ${JSON.stringify(diagForward)}`);
 
-    // The coordinates were built above based on the y,x values of the piece just 
-    //  played. The _win function will check for 4 consecutive matches anywhere 
-    //  in the coordinate pairs.
+    // The coordinates were built based on the y,x values of the piece just played.
+    //  The _win function will check for 4 consecutive matches anywhere in the 
+    //  coordinate pairs and will return true when 4 consecutive matches are found.
     if (_win(horiz) || _win(vert) || _win(diagBack) || _win(diagForward)) {
       return true;
     }
 
-  } else {
-    console.log("win check bypassed, nbrOfPlays =", nbrOfPlays);
   }
 
 }
