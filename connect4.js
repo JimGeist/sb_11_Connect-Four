@@ -259,7 +259,7 @@ function playColumn(x) {
   board[y][x] = currPlayer[0];
 
   // check for win
-  if (checkForWin(y, x)) {
+  if (checkForWinNew(y, x)) {
     return endGame(`Congratulations Player ${currPlayer[0]} - You Won!`, true);
   }
 
@@ -305,7 +305,10 @@ function handleBoardClick(evt) {
       let posn = elementId.indexOf("-");
       if (posn > -1) {
         // elementId contains a -. it should be y-x. We need the 'x'
-        let column = elementId.slice((posn + 1));
+        // The +elementId I guess forces it as a numeric. This function
+        //  was returning a string equivalent of a number instead of a
+        //  number when the +elementId was not used. 
+        let column = +elementId.slice((posn + 1));
 
         playColumn(column);
 
@@ -381,6 +384,122 @@ function checkForWin() {
 
   }
 }
+
+function checkForWinNew(y, x) {
+
+  function _win(cells) {
+
+    // Check for four consecutive cells to see if they're all color of current player
+    //  - cells: list of (y, x) cells
+    //  - returns true when four consecutive cells in the board match the current player.
+    // There must be a minimum of four (y,x) coordinates in the cells list.
+
+    let outWin = false;
+
+    if (cells.length > 3) {
+
+      // Need 4 consecutive matches for a win.
+
+      let total = cells.reduce(function (ctrConsec, [y, x]) {
+
+        if (board[y][x] === currPlayer[0]) {
+          ctrConsec++;
+          console.log("ctrConsec:", ctrConsec);
+        } else {
+          if (ctrConsec < 4) {
+            ctrConsec = 0;
+          }
+        }
+        return ctrConsec;
+
+      }, 0);
+
+      if (total > 3) {
+        return true;
+      } else {
+        return outWin;
+      }
+
+    }
+
+    return outWin;
+
+  }
+
+
+  // Don't bother checking until there are more than 6 pieces on the board.
+  if (nbrOfPlays > 6) {
+
+    // instead of checking the entire board from 0,0 to (HEIGHT - 1), (WIDTH - 1)
+    //  just look around the piece that was just played. 
+
+    console.log("");
+    console.log(`(y,x) = (${y},${x})`);
+
+    // Build the horizontal, vertical, diagBack, and diagForward coordinates of the cells we 
+    //  we need to check for a win. 
+    const horiz = [];
+    let xMax = x + 4
+    for (let xCtr = x - 3; xCtr < xMax; xCtr++) {
+      // y is constant for horizontal
+      if ((xCtr > -1) && (xCtr < WIDTH)) {
+        horiz.push([y, xCtr]);
+      }
+    }
+    console.log(`(y,x) = (${y},${x}): horiz: ${JSON.stringify(horiz)}`);
+
+    const vert = [];
+    // y works from max to min because we start from the bottom
+    //  of the board (HEIGHT - 1)
+    // (y - 1) instead of (y - 4) for the for loop end because y,x was JUST 
+    //  played and there cannot be a piece above it.
+    for (let yCtr = y + 3; yCtr > y - 1; yCtr--) {
+      // x is constant for vertical
+      if ((yCtr > -1) && (yCtr < HEIGHT)) {
+        vert.push([yCtr, x]);
+      }
+    }
+    console.log(`(y,x) = (${y},${x}): vert: ${JSON.stringify(vert)}`);
+
+    // diagBack, \, x needs to decease, y needs to decrease
+    const diagBack = []
+
+    let yCalc = y + 3;
+    for (let xCtr = x + 3; xCtr > x - 4; xCtr--) {
+      if ((xCtr > -1) && (xCtr < WIDTH) && (yCalc > -1) && (yCalc < HEIGHT)) {
+        diagBack.push([yCalc, xCtr]);
+      }
+      yCalc--;
+    }
+    console.log(`(y,x) = (${y},${x}): diagBack: ${JSON.stringify(diagBack)}`);
+
+
+    // diagForward, /, x needs to incease, y needs to decrease
+    const diagForward = []
+
+    yCalc = y + 3;
+    // for (let xCtr = x + 3; xCtr > x - 4; xCtr++) {
+    for (let xCtr = x - 3; xCtr < xMax; xCtr++) {
+      if ((xCtr > -1) && (xCtr < WIDTH) && (yCalc > -1) && (yCalc < HEIGHT)) {
+        diagForward.push([yCalc, xCtr]);
+      }
+      yCalc--;
+    }
+    console.log(`(y,x) = (${y},${x}): diagForward: ${JSON.stringify(diagForward)}`);
+
+    // The coordinates were built above based on the y,x values of the piece just 
+    //  played. The _win function will check for 4 consecutive matches anywhere 
+    //  in the coordinate pairs.
+    if (_win(horiz) || _win(vert) || _win(diagBack) || _win(diagForward)) {
+      return true;
+    }
+
+  } else {
+    console.log("win check bypassed, nbrOfPlays =", nbrOfPlays);
+  }
+
+}
+
 
 makeBoard();
 makeHtmlBoard();

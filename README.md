@@ -4,7 +4,9 @@ Project involved taking a rough JavaScript, html, and css and putting in the pie
 
 [Connect Four](https://jimgeist.github.io/sb_11_Connect-Four/)  
 
-Attempts were made to create an efficient checkForWin -- one that was based on the piece just played instead of the existing checkForWin that checks the entire board from top left to bottom right. The existing checkForWin was updated to at least check the board from the bottom right to the top left. checkForWin also does not execute until there are more than 6 pieces on the board.
+This version includes a new checkForWinNew function. The function does not check the entire board for a win and instead checks around the piece that was just played. The _win function required an update since it
+was now receiving in some cases more than 4 coordinate pairs. The _win function now uses a reduce function to 
+determine whether there were 4 or more consecutive pieces for the current player. The re-written checkForWinNew function is more efficient, but it is also not as straightforward as the original checkForWin.
 
 css was updated to include ball colors, different top row hover colors, and animation related styling.
 
